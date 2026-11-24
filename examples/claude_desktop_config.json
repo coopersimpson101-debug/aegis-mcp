@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "aegis-printer": {
+      "command": "aegis-mcp-printer",
+      "args": ["--config", "/path/to/aegis-mcp/config/printer.example.toml"],
+      "env": { "AEGIS_PRINTER_API_KEY": "<your OctoPrint/Moonraker API key>" }
+    },
+    "aegis-nas": {
+      "command": "aegis-mcp-nas",
+      "args": ["--root", "media=/mnt/tank/media", "--root", "docs=/mnt/tank/docs"]
+    },
+    "aegis-lab": {
+      "command": "aegis-mcp-lab",
+      "args": ["--config", "/path/to/aegis-mcp/config/lab.example.toml"],
+      "env": { "AEGIS_HA_TOKEN": "<home assistant long-lived token>" }
+    },
+    "aegis-drone": {
+      "command": "aegis-mcp-drone",
+      "args": ["--config", "/path/to/aegis-mcp/config/drone.example.toml", "--dry-run"]
+    }
+  }
+}

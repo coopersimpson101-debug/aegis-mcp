@@ -1,0 +1,77 @@
+# aegis-mcp-lab example config. Run with the simulator:  aegis-mcp-lab --config config/lab.example.toml --demo
+# Device ids and topics match the in-memory demo lab (aegis_mcp.sim.lab.make_demo_lab).
+
+[safety]
+confirm_at = "high"
+audit_log = "~/.aegis/lab-audit.jsonl"
+state_dir = "~/.aegis/state"
+
+[lab.mqtt]
+host = "127.0.0.1"
+port = 1883
+# username = "aegis"
+# password_env = "AEGIS_MQTT_PASSWORD"   # secrets come from env vars, never from this file
+
+[lab.homeassistant]
+url = "http://homeassistant.local:8123"
+token_env = "AEGIS_HA_TOKEN"
+allowed_entities = ["sensor.*", "light.*", "switch.fume_extractor"]
+allowed_services = ["light.turn_on", "light.turn_off", "switch.turn_on", "switch.turn_off"]
+
+[[lab.devices]]
+id = "env_temp"
+kind = "sensor"
+topic = "lab/env/temperature"
+unit = "C"
+
+[[lab.devices]]
+id = "env_humidity"
+kind = "sensor"
+topic = "lab/env/humidity"
+value_key = "value"
+unit = "%"
+
+[[lab.devices]]
+id = "co2"
+kind = "sensor"
+transport = "ha"
+entity_id = "sensor.lab_co2"
+
+[[lab.devices]]
+id = "lamp"
+kind = "relay"
+command_topic = "cmnd/lamp/POWER"
+state_topic = "stat/lamp/POWER"
+risk_on = "low"
+
+[[lab.devices]]
+id = "bench_psu"
+kind = "outlet"
+description = "Bench power supply"
+command_topic = "cmnd/bench_psu/POWER"
+state_topic = "stat/bench_psu/POWER"
+risk_on = "medium"
+
+[[lab.devices]]
+id = "soldering_iron"
+kind = "outlet"
+description = "Soldering station - fire risk if left on"
+command_topic = "cmnd/soldering_iron/POWER"
+state_topic = "stat/soldering_iron/POWER"
+risk_on = "high"          # needs human confirmation to switch on
+auto_off_s = 1800         # and switches itself off after 30 minutes
+
+[[lab.devices]]
+id = "fume_extractor"
+kind = "relay"
+transport = "ha"
+entity_id = "switch.fume_extractor"
+risk_on = "low"
+
+[lab.scenes.solder]
+description = "Soldering session: fume extractor, lamp, iron"
+actions = [{ device = "fume_extractor", on = true }, { device = "lamp", on = true }, { device = "soldering_iron", on = true }]
+
+[lab.scenes.shutdown]
+description = "Everything off"
+actions = [{ device = "soldering_iron", on = false }, { device = "bench_psu", on = false }, { device = "lamp", on = false }, { device = "fume_extractor", on = false }]

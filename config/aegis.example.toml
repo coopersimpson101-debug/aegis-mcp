@@ -1,0 +1,104 @@
+# aegis-core orchestrator + router config.
+#   aegis-orchestrate --config config/aegis.example.toml --explain "what's the bed temperature?"
+#   aegis-orchestrate --config config/aegis.example.toml "start the benchy print and tell me the ETA"
+#
+# PRICES ARE CONFIG, NOT TRUTH. The numbers below were copied from Anthropic's published
+# list prices at the time of writing (USD per million tokens). Check the current pricing page
+# and update them; the router only knows what you tell it.
+
+[router]
+daily_budget_usd = 5.00
+per_request_budget_usd = 0.50
+expected_output_tokens = 800
+low_confidence_threshold = 0.5
+max_attempts = 3
+budget_file = "~/.aegis/budget.json"
+
+# Tiers are ordered weakest/cheapest -> strongest. A request goes to the first tier whose
+# max_difficulty >= its difficulty score, then latency/cost/context constraints apply.
+[[router.tiers]]
+name = "local"
+provider = "ollama"
+model = "llama3.1:8b"
+max_difficulty = 0.25
+input_usd_per_mtok = 0.0
+output_usd_per_mtok = 0.0
+est_latency_s = 6
+context_tokens = 32000
+max_output_tokens = 2048
+
+[[router.tiers]]
+name = "fast"
+provider = "anthropic"
+model = "claude-haiku-5-5"
+max_difficulty = 0.45
+input_usd_per_mtok = 0.10
+output_usd_per_mtok = 0.50
+est_latency_s = 3
+context_tokens = 1000000
+max_output_tokens = 8192
+
+[[router.tiers]]
+name = "balanced"
+provider = "anthropic"
+model = "claude-sonnet-5-5"
+max_difficulty = 0.70
+input_usd_per_mtok = 2.00
+output_usd_per_mtok = 10.00
+est_latency_s = 8
+context_tokens = 1000000
+max_output_tokens = 16000
+
+[[router.tiers]]
+name = "deep"
+provider = "anthropic"
+model = "claude-opus-5-5"
+max_difficulty = 1.0
+input_usd_per_mtok = 4.00
+output_usd_per_mtok = 20.00
+est_latency_s = 20
+context_tokens = 1000000
+max_output_tokens = 16000
+options = { effort = "high" }
+
+[providers.anthropic]
+type = "anthropic"
+api_key_env = "ANTHROPIC_API_KEY"
+
+[providers.ollama]
+type = "ollama"
+base_url = "http://127.0.0.1:11434"
+
+# Any OpenAI-compatible endpoint (vLLM, LM Studio, LiteLLM, OpenRouter...)
+# [providers.lmstudio]
+# type = "openai_compat"
+# base_url = "http://127.0.0.1:1234/v1"
+# api_key_env = "LMSTUDIO_API_KEY"
+
+[orchestrator]
+autonomous_max_risk = "medium"   # anything riskier needs the human (tools that confirm server-side are left to the server)
+deny_tools = []                  # e.g. ["drone__*"] to keep the drone out of reach entirely
+max_steps = 12
+max_tool_calls = 30
+plan_first = false
+audit_log = "~/.aegis/orchestrator-audit.jsonl"
+
+[[servers]]
+name = "printer"
+command = "aegis-mcp-printer"
+args = ["--config", "config/printer.example.toml"]
+
+[[servers]]
+name = "nas"
+command = "aegis-mcp-nas"
+args = ["--config", "config/nas.example.toml"]
+
+[[servers]]
+name = "lab"
+command = "aegis-mcp-lab"
+args = ["--config", "config/lab.example.toml", "--demo"]
+
+# Remote server over streamable HTTP:
+# [[servers]]
+# name = "drone"
+# url = "http://127.0.0.1:8003/mcp"

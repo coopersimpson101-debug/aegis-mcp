@@ -1,0 +1,30 @@
+# aegis-mcp-printer example. Try it against the simulator:
+#   aegis-mcp sim octoprint --port 5000          (prints the fake API key)
+#   AEGIS_PRINTER_API_KEY=sim-key aegis-mcp-printer --config config/printer.example.toml
+
+[safety]
+confirm_at = "high"              # risk level that needs a human confirmation code
+max_risk = "critical"            # anything above is refused outright
+dry_run = false                  # or set AEGIS_DRY_RUN=1
+audit_log = "~/.aegis/printer-audit.jsonl"
+state_dir = "~/.aegis/state"
+confirmation_ttl_s = 120
+# risk_overrides = { printer_resume = "high" }
+# deny_tools = ["printer_upload_gcode"]
+[safety.rate_limits]
+"*" = [30, 60]                   # 30 actuating calls per minute per tool
+printer_set_temperature = [6, 60]
+
+[printer]
+backend = "octoprint"            # or "moonraker" (Klipper)
+url = "http://127.0.0.1:5000"    # e.g. http://octopi.local or http://<klipper-host>:7125
+api_key_env = "AEGIS_PRINTER_API_KEY"
+# webcam_snapshot_url = "http://octopi.local/webcam/?action=snapshot"
+
+[printer.limits]
+max_hotend_c = 285
+max_bed_c = 110
+max_chamber_c = 70
+confirm_hotend_above_c = 250     # "heat above X needs a human"
+confirm_bed_above_c = 90
+max_upload_bytes = 20000000

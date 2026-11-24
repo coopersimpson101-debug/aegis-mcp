@@ -1,0 +1,28 @@
+# aegis-mcp-drone example.
+#   ArduPilot SITL:      sim_vehicle.py -v ArduCopter --console --map   (exposes tcp:127.0.0.1:5760)
+#   in-repo fake:        aegis-mcp sim vehicle --port 5760
+#   then:                aegis-mcp-drone --config config/drone.example.toml
+
+[safety]
+confirm_at = "high"
+audit_log = "~/.aegis/drone-audit.jsonl"
+state_dir = "~/.aegis/state"
+[safety.rate_limits]
+drone_goto = [10, 60]
+
+[drone]
+backend = "mavlink"                     # or "aegis-link" for custom FC firmware (docs/aegis-link-protocol.md)
+connection = "tcp:127.0.0.1:5760"       # udpin:0.0.0.0:14550, COM5, /dev/ttyACM0 ...
+# serial_port = "/dev/ttyUSB0"          # aegis-link only
+# baud = 115200
+allowed_modes = ["GUIDED", "LOITER", "BRAKE", "ALT_HOLD", "LAND", "RTL"]
+min_battery_pct_to_arm = 30
+min_satellites_to_arm = 6
+max_takeoff_alt_m = 30
+
+[drone.geofence]                         # REQUIRED for takeoff/goto. Defaults match ArduPilot SITL's home.
+home_lat = -35.363262
+home_lon = 149.165237
+radius_m = 120
+max_alt_m = 40
+# polygon = [[-35.3625, 149.1640], [-35.3625, 149.1665], [-35.3640, 149.1665], [-35.3640, 149.1640]]

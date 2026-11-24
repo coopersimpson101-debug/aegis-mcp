@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "aegis-printer": {
+      "type": "stdio",
+      "command": "aegis-mcp-printer",
+      "args": ["--config", "config/printer.example.toml"],
+      "env": { "AEGIS_PRINTER_API_KEY": "${AEGIS_PRINTER_API_KEY}" }
+    },
+    "aegis-nas": {
+      "type": "stdio",
+      "command": "aegis-mcp-nas",
+      "args": ["--config", "config/nas.example.toml"]
+    },
+    "aegis-lab": {
+      "type": "http",
+      "url": "http://127.0.0.1:8004/mcp"
+    }
+  }
+}

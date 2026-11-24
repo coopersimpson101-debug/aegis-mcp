@@ -1,0 +1,27 @@
+# aegis-mcp-nas example. Roots are the ONLY places the server can see.
+#   aegis-mcp-nas --config config/nas.example.toml
+# or without a file:  aegis-mcp-nas --root media=/mnt/tank/media --root docs=/mnt/tank/docs --writable docs
+
+[safety]
+confirm_at = "high"
+audit_log = "~/.aegis/nas-audit.jsonl"
+state_dir = "~/.aegis/state"     # keep this OUTSIDE every root
+
+[nas]
+writable_roots = ["scratch"]     # deletes (to trash) only allowed here
+max_read_bytes = 1048576
+smartctl = "smartctl"            # needs smartmontools; the server user may need sudo/disk group for SMART
+# smart_devices = ["/dev/sda", "/dev/sdb"]
+# deny_globs = ["**/.ssh/**", "**/*.key", "**/*.pem", "**/secrets/**"]
+
+[nas.roots]
+media = "/mnt/tank/media"
+docs = "/mnt/tank/docs"
+scratch = "/mnt/tank/scratch"
+
+# Optional appliance API (read-only health):
+# [nas.appliance]
+# kind = "truenas"               # or "synology"
+# url = "https://truenas.local"
+# api_key_env = "AEGIS_TRUENAS_API_KEY"
+# # synology: account_env = "AEGIS_SYNOLOGY_USER", password_env = "AEGIS_SYNOLOGY_PASSWORD"
