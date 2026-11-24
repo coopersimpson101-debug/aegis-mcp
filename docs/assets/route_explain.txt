@@ -1,0 +1,10 @@
+local     llama3.1:8b          score=0.13 est=$0.00000  "what's the bed temperature?"
+          reasons: difficulty 0.13 -> local
+local     llama3.1:8b          score=0.13 est=$0.00000  'turn off the soldering iron'
+          reasons: difficulty 0.13 -> local
+fast      claude-haiku-5-5     score=0.37 est=$0.00040  'Compare PETG and ABS for an enclosure part and explain how b'
+          reasons: difficulty 0.37 -> fast
+deep      claude-opus-5-5      score=0.80 est=$0.01614  'Plan a survey flight, debug why the EKF altitude drifts, ana'
+          reasons: difficulty 0.80 -> deep
+fast      claude-haiku-5-5     score=0.80 est=$0.00040  'Plan a survey flight, debug why the EKF altitude drifts, ana' {'latency_budget_s': 5}
+          reasons: difficulty 0.80 -> deep; latency budget 5s -> fast

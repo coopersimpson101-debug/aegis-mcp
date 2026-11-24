@@ -1,0 +1,10 @@
+connected; 19 tools: lab__lab_activate_scene, lab__lab_get_state, lab__lab_ha_call_service, lab__lab_ha_state, lab__lab_list_devices, lab__la...
+
+  [human] asked to confirm printer__printer_set_temperature (high): set bed to 100 C -> typing code from log
+  tool lab__lab_read_sensor: ok
+  tool printer__printer_status: ok
+  tool printer__printer_set_temperature: ok
+
+FINAL: Lab is 22.4 C, printer is idle and the bed is now heating to 100 C for ABS.
+bed target on the fake printer: 100.0 C
+audit logs in $TMPDIR\aegis-demo-7emmf9i2

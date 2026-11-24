@@ -1,94 +1,62 @@
-# aegis-mcp
+<p align="center">
+  <img src="docs/assets/banner.svg" alt="aegis-mcp: safety-first MCP servers for physical hardware" width="100%">
+</p>
 
-**Let an AI assistant run your 3D printer, drone, NAS and lab bench without letting it burn, crash or delete anything.**
+<p align="center">
+  <a href="https://github.com/coopersimpson101-debug/aegis-mcp/actions/workflows/ci.yml"><img src="https://github.com/coopersimpson101-debug/aegis-mcp/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-818CF8.svg" alt="License: MIT"></a>
+  <img src="https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-818CF8.svg" alt="Python 3.11 | 3.12 | 3.13">
+  <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-servers-818CF8.svg" alt="Model Context Protocol"></a>
+  <img src="https://img.shields.io/badge/status-alpha%2C%20simulator--tested-d29922.svg" alt="Status: alpha, simulator-tested">
+</p>
 
-aegis-mcp is a set of [Model Context Protocol](https://modelcontextprotocol.io) servers for physical hardware, plus
-`aegis_core`: the cost-aware model router and multi-server orchestrator from AEGIS, a personal JARVIS-style
-assistant, released as a library. The servers work with any MCP client (Claude Desktop, Claude Code, your own
-agent). Every one of them shares a single safety layer:
+**Let an AI assistant run your 3D printer, drone, NAS and lab bench without letting it burn, crash or delete
+anything.** aegis-mcp is a set of [Model Context Protocol](https://modelcontextprotocol.io) servers for physical
+hardware that share one safety layer. Dangerous calls need a one-time code from a human, and the model can never
+see or forge that code. The package also ships `aegis_core`, a cost-aware model router and multi-server
+orchestrator.
 
-- **Per-call risk levels.** A request to heat the bed to 60 C is `medium`. A request for 100 C is `high`, and a
-  request for 130 C is refused.
-- **Human confirmation codes** for dangerous actions. The model never sees the code, and the code is valid only for
-  that exact call, once, for 2 minutes.
-- **Geofence.** Takeoff and goto are refused outside it.
-- **Path-traversal-proof NAS roots.**
-- **Allowlists, rate limits and dry-run mode.**
-- **A hash-chained, append-only audit log.**
+<p align="center">
+  <a href="#quickstart">Quickstart</a> ·
+  <a href="#architecture">Architecture</a> ·
+  <a href="#tool-reference">Tool reference</a> ·
+  <a href="docs/safety-model.md">Safety model</a> ·
+  <a href="#status">Status</a> ·
+  <a href="docs/simulators.md">Simulators</a> ·
+  <a href="docs/architecture.md">Design notes</a>
+</p>
 
-| Server | Talks to | Highlights |
-|---|---|---|
-| `aegis-mcp-printer` | OctoPrint REST, Moonraker/Klipper | status, temps, set temps, upload G-code (scanned), start/pause/resume/cancel, progress, webcam snapshot resource |
-| `aegis-mcp-drone` | MAVLink via pymavlink (ArduPilot, PX4, SITL), or **AEGIS-Link** serial for custom FC firmware | telemetry, arm/disarm, takeoff/land/RTL, goto with geofence, mode allowlist, pre-arm checks |
-| `aegis-mcp-nas` | any mounted filesystem (SMB/NFS/local), `smartctl`, optional TrueNAS/Synology API | list/search/read/stat, disk usage, SMART verdicts, delete-to-trash |
-| `aegis-mcp-lab` | MQTT (Tasmota/ESPHome/Shelly style), Home Assistant REST | sensors, relays, power-strip outlets, scenes, dead-man auto-off |
-| `aegis_core` | Anthropic (official SDK), OpenAI-compatible endpoints, Ollama | difficulty/latency/cost routing, daily budget, fallback + escalation, agent loop over many MCP servers |
+<p align="center">
+  <img src="docs/assets/safety_walkthrough.svg" alt="Terminal: a 100 C bed request returns confirmation_required, a guessed code and a code for different arguments fail, the human's code succeeds once, 130 C and a path-traversal read are blocked, and the audit chain verifies" width="100%">
+  <br>
+  <sub>Real MCP calls against the in-repo OctoPrint simulator and a temporary NAS root. The bed stays at 60 C
+  until the human's code arrives. Regenerate with <code>python scripts/make_figures.py</code>
+  (text capture: <a href="docs/assets/safety_walkthrough.txt">safety_walkthrough.txt</a>).</sub>
+</p>
 
-> **Status: alpha, simulator-tested only.** Every test runs against fakes and simulators that live in this repo.
-> Nothing here has been validated against a real printer, drone, NAS or lab yet. See
-> [Hardware validation](#hardware-validation--todo-for-the-author).
+## Highlights
 
----
-
-## Architecture
-
-```mermaid
-flowchart LR
-  subgraph clients[MCP clients]
-    CD[Claude Desktop / Code]
-    AE[your AEGIS app]
-  end
-  subgraph core[aegis_core library]
-    OR[Orchestrator<br/>tool aggregation, policy, approver]
-    RT[Router<br/>difficulty, latency, cost, budget]
-    PV[Providers<br/>Anthropic, OpenAI-compat, Ollama]
-    OR --> RT --> PV
-  end
-  AE --> OR
-  subgraph servers[aegis-mcp servers]
-    P[printer] --- G((Guard))
-    D[drone] --- G
-    N[nas] --- G
-    L[lab] --- G
-  end
-  CD -- stdio / HTTP --> servers
-  OR -- stdio / HTTP --> servers
-  P --> OP[OctoPrint / Moonraker]
-  D --> FC[ArduPilot / PX4 / SITL / custom FC]
-  N --> FS[mounted shares + smartctl]
-  L --> MQ[MQTT broker / Home Assistant]
-  G -.-> AU[(audit.jsonl<br/>hash chain)]
-```
-
-The same picture in ASCII, with package paths and design notes, is in [docs/architecture.md](docs/architecture.md).
+- **4 MCP servers, 38 tools:** printer (OctoPrint, Moonraker/Klipper), drone (MAVLink: ArduPilot/PX4/SITL, or
+  the AEGIS-Link serial protocol), NAS (any mount, `smartctl`, TrueNAS/Synology), lab (MQTT, Home Assistant).
+  They work with any MCP client: Claude Desktop, Claude Code or your own agent.
+- **Risk is computed per call, not per tool.** A 60 C bed is `medium`, 100 C is `high` and needs a human,
+  and 130 C is refused (defaults: confirm above 90 C, hard max 110 C).
+- **Confirmation codes are bound to the exact arguments.** Each code is single-use and expires after 2 minutes.
+  A code for "bed 100 C" cannot approve "bed 105 C". The code goes to the server log, never into the tool
+  result, and the orchestrator strips any `confirm_token` the model invents.
+- **Domain guards:** a geofence on takeoff and goto, scanning of uploaded G-code for peak temperatures,
+  path-traversal-proof NAS roots (including symlink escapes), allowlists, rate limits and dry-run mode.
+- **Safe exits stay reachable.** `drone_land`, `drone_rtl`, `printer_pause`, heater off and outlet off are all
+  low risk.
+- **Tamper-evident audit:** a SHA-256 hash-chained JSONL log with secrets redacted, which `aegis-mcp audit`
+  verifies.
+- **A cost-aware router:** local Ollama → Haiku → Sonnet → Opus chosen by difficulty, latency budget and
+  daily spend, with escalation on errors or low confidence.
 
 ## Quickstart
 
-```bash
-git clone https://github.com/coopersimpson101-debug/aegis-mcp && cd aegis-mcp
-python -m venv .venv && . .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -e ".[all]"                              # or ".[dev]" to run the tests
-pytest                                               # ~80 tests, all against simulators
-python examples/offline_demo.py                      # full orchestrator run, no hardware, no API key
-python examples/route_explain.py                     # see which model each prompt would be routed to
-```
-
-### Try a server against a simulator
-
-```bash
-aegis-mcp sim octoprint --port 5000                  # fake OctoPrint (expects X-Api-Key: sim-key)
-AEGIS_PRINTER_API_KEY=sim-key aegis-mcp-printer --url http://127.0.0.1:5000 --transport streamable-http --port 8001
-
-aegis-mcp sim vehicle --port 5760                    # fake ArduCopter speaking MAVLink over TCP
-aegis-mcp-drone --config config/drone.example.toml   # same home as ArduPilot SITL, so the example fence fits
-
-aegis-mcp-lab --config config/lab.example.toml --demo   # in-memory broker with simulated plugs
-aegis-mcp-nas --root docs=$HOME/Documents            # read-only unless you add --writable docs
-```
-
-### Claude Desktop
-
-Add the servers to `claude_desktop_config.json` (full example: [examples/claude_desktop_config.json](examples/claude_desktop_config.json)):
+**Claude Desktop**: add the servers to `claude_desktop_config.json` (full example:
+[examples/claude_desktop_config.json](examples/claude_desktop_config.json)):
 
 ```json
 {
@@ -110,22 +78,48 @@ Add the servers to `claude_desktop_config.json` (full example: [examples/claude_
 }
 ```
 
-If `aegis-mcp-*` is not on Claude Desktop's PATH, use the absolute path to the venv's script (or
-`"command": "/path/to/.venv/bin/python", "args": ["-m", "aegis_mcp.printer", ...]`). Confirmation codes appear
-in the MCP server log (Settings → Developer → open logs) and under `~/.aegis/state/pending/`.
-
-### Claude Code
+**Claude Code** (project-scoped `.mcp.json` example: [examples/claude_code_mcp.json](examples/claude_code_mcp.json)):
 
 ```bash
 claude mcp add aegis-nas -- aegis-mcp-nas --root docs=/mnt/tank/docs
 claude mcp add aegis-printer -e AEGIS_PRINTER_API_KEY=<key> -- aegis-mcp-printer --config config/printer.toml
-# a server running elsewhere over streamable HTTP:
-claude mcp add --transport http aegis-lab http://127.0.0.1:8004/mcp
+claude mcp add --transport http aegis-lab http://127.0.0.1:8004/mcp     # a server running over streamable HTTP
 ```
 
-A project-scoped `.mcp.json` example is in [examples/claude_code_mcp.json](examples/claude_code_mcp.json).
+**Install and try it with no hardware and no API key:**
 
-### Using the core library (router + orchestrator)
+```bash
+git clone https://github.com/coopersimpson101-debug/aegis-mcp && cd aegis-mcp
+pip install -e ".[dev]"                 # in a venv; ".[all]" without the test tools
+pytest -q                               # 84 tests, all against in-repo simulators
+python examples/offline_demo.py         # orchestrator + 2 MCP servers + a scripted model
+python examples/route_explain.py        # which model each prompt would be routed to
+```
+
+If `aegis-mcp-*` is not on Claude Desktop's PATH, use the absolute path to the venv's script, or
+`"command": "/path/to/.venv/bin/python", "args": ["-m", "aegis_mcp.printer", ...]`. Confirmation codes appear
+in the MCP server log (Settings → Developer → open logs) and under `~/.aegis/state/pending/`. You can also
+approve from a shell with `aegis-mcp approve <request_id>`.
+
+<details>
+<summary><b>Run each server against a simulator</b></summary>
+
+```bash
+aegis-mcp sim octoprint --port 5000                  # fake OctoPrint (expects X-Api-Key: sim-key)
+AEGIS_PRINTER_API_KEY=sim-key aegis-mcp-printer --url http://127.0.0.1:5000 --transport streamable-http --port 8001
+
+aegis-mcp sim vehicle --port 5760                    # fake ArduCopter speaking MAVLink over TCP
+aegis-mcp-drone --config config/drone.example.toml   # same home as ArduPilot SITL, so the example fence fits
+
+aegis-mcp-lab --config config/lab.example.toml --demo   # in-memory broker with simulated plugs
+aegis-mcp-nas --root docs=$HOME/Documents            # read-only unless you add --writable docs
+```
+
+ArduPilot SITL and other real simulators: [docs/simulators.md](docs/simulators.md).
+</details>
+
+<details>
+<summary><b>Use the core library (router + orchestrator)</b></summary>
 
 ```python
 from aegis_core import Orchestrator, Router, load_config
@@ -146,16 +140,106 @@ async with Orchestrator(router, {s.name: s.target() for s in cfg.servers},
 
 Or from the shell: `aegis-orchestrate --config config/aegis.example.toml "status of the printer"` and
 `aegis-orchestrate --config ... --explain "plan a survey flight"`.
+</details>
+
+## Status
+
+| | |
+|---|---|
+| ✅ **Done & tested here** | All 4 servers and every tool, the safety guard (risk tiers, argument-bound single-use codes, path guard incl. symlink escapes, geofence, rate limits, audit chain), router, providers' request/response mapping, the orchestrator loop, and real MCP stdio + streamable-HTTP sessions. 84 tests: 83 pass + 1 skipped on Windows 10 / Python 3.12 (the symlink-escape test needs symlink privileges there); all run in CI on Ubuntu (Python 3.11–3.13). |
+| 🧪 **Simulated only** | OctoPrint and Moonraker (HTTP fakes), an ArduCopter speaking MAVLink (in-repo fake vehicle), MQTT plugs and sensors (in-memory broker), `smartctl` (JSON fixtures), TrueNAS/Synology (HTTP fakes), and LLM providers (scripted). |
+| ⏳ **Needs hardware** | A real printer, ArduPilot SITL and then a real vehicle, PX4, AEGIS-Link firmware, SMART on real disks, a real TrueNAS/Synology, real MQTT devices and Home Assistant, current router prices, and checking where each MCP client shows server stderr. Checklist: [Hardware validation](#hardware-validation). |
+
+## Architecture
+
+Every tool call, whether it comes from Claude Desktop or Code or from the `aegis_core` orchestrator, passes
+through the same guard inside the server before anything touches a device.
+
+```mermaid
+flowchart LR
+  subgraph clients["LLM clients"]
+    CD["Claude Desktop / Claude Code"]
+    AE["your app on aegis_core"]
+  end
+  subgraph core["aegis_core"]
+    OR["Orchestrator<br/>tool aggregation · autonomous_max_risk · approver"]
+    RT["Router<br/>difficulty · latency · cost · daily budget"]
+    PV["Providers<br/>Anthropic · OpenAI-compatible · Ollama"]
+    OR --> RT --> PV
+  end
+  AE --> OR
+  subgraph servers["aegis-mcp servers"]
+    direction TB
+    G{{"Safety guard<br/>allow/deny → max_risk → rate limit → domain checks<br/>→ dry-run → human code → execute → audit"}}
+    P["printer"]
+    D["drone"]
+    N["nas"]
+    L["lab"]
+    G --> P & D & N & L
+  end
+  CD -- "MCP stdio / HTTP" --> G
+  OR -- "MCP stdio / HTTP" --> G
+  H(["human operator"]) -. "one-time code from server log<br/>or aegis-mcp approve" .-> G
+  G -.-> AU[("audit.jsonl<br/>SHA-256 chain")]
+  P --> OP["OctoPrint / Moonraker"]
+  D --> FC["ArduPilot / PX4 / SITL / custom FC"]
+  N --> FS["mounted shares + smartctl"]
+  L --> MQ["MQTT broker / Home Assistant"]
+```
+
+A dangerous call, end to end:
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant M as model
+  participant S as MCP server (guard)
+  participant H as human
+  participant P as printer
+  M->>S: printer_set_temperature(bed, 100)
+  S-->>M: confirmation_required (request_id, no code)
+  S-)H: code for request_id (stderr / state dir)
+  H->>S: reads code, gives it to the client (or aegis-mcp approve)
+  M->>S: same call + confirm_token
+  S->>S: token matches hash(tool, canonical args), unused, unexpired
+  S->>P: set bed target 100 C
+  S-->>M: ok (risk=high), recorded in audit chain
+```
+
+The ASCII picture with package paths and design notes is in [docs/architecture.md](docs/architecture.md).
+
+<details>
+<summary><b>Real output: the offline orchestrator demo and the router</b></summary>
+
+<p align="center">
+  <img src="docs/assets/offline_demo.svg" alt="offline_demo.py output: orchestrator connects to 19 tools, human confirms the 100 C bed request, final answer" width="100%">
+</p>
+<p align="center">
+  <img src="docs/assets/route_explain.svg" alt="route_explain.py output: simple prompts go to a local model, hard ones to Opus, a latency budget forces Haiku" width="100%">
+</p>
+
+Text captures: [offline_demo.txt](docs/assets/offline_demo.txt), [route_explain.txt](docs/assets/route_explain.txt).
+The example prices are in `config/aegis.example.toml`, so the cost estimates are only as current as that file.
+</details>
 
 ---
 
 ## Tool reference
 
-Every tool returns `{"status": ..., "tool", "risk", ...}`. `status` is one of `ok` (with `result`), `blocked` (with
-`reason`), `dry_run` (with `would_do`), `confirmation_required` (with `request_id`, `summary`, `expires_in_s`) or
-`rate_limited`. Tools marked †  take an optional `confirm_token`.
+Every tool returns `{"status": ..., "tool", "risk", ...}`. `status` is one of:
 
-### Printer (`aegis-mcp-printer`)
+- `ok`, with `result`
+- `blocked`, with `reason`
+- `dry_run`, with `would_do`
+- `confirmation_required`, with `request_id`, `summary` and `expires_in_s`
+- `rate_limited`
+
+Tools marked † take an optional `confirm_token`. Risk levels from low to high: `read` · `low` · `medium` ·
+**`high`** · **`critical`**. With the default policy, `high` and above need a human code.
+
+### 🖨️ Printer (`aegis-mcp-printer`)
+
+OctoPrint REST or Moonraker/Klipper.
 
 | Tool | Risk | Description |
 |---|---|---|
@@ -172,7 +256,9 @@ Every tool returns `{"status": ..., "tool", "risk", ...}`. `status` is one of `o
 
 Resources: `printer://status` (JSON), `printer://webcam/snapshot` (image/jpeg), `printer://files`.
 
-### Drone (`aegis-mcp-drone`)
+### 🚁 Drone (`aegis-mcp-drone`)
+
+MAVLink via pymavlink (ArduPilot, PX4, SITL), or **AEGIS-Link** serial for custom flight-controller firmware.
 
 | Tool | Risk | Description |
 |---|---|---|
@@ -189,8 +275,9 @@ Resources: `printer://status` (JSON), `printer://webcam/snapshot` (image/jpeg), 
 Resources: `drone://telemetry`, `drone://geofence`. Backends: `mavlink` (any pymavlink connection string) or
 `aegis-link` ([protocol spec](docs/aegis-link-protocol.md)).
 
-### NAS (`aegis-mcp-nas`)
+### 🗄️ NAS (`aegis-mcp-nas`)
 
+Works with any mounted filesystem (SMB/NFS/local), `smartctl`, and optionally the TrueNAS or Synology API.
 Paths are virtual: `<root>/<relative path>`, where roots are configured names such as `media` or `docs`.
 
 | Tool | Risk | Description |
@@ -208,7 +295,9 @@ Paths are virtual: `<root>/<relative path>`, where roots are configured names su
 
 Resource: `nas://roots`.
 
-### Lab (`aegis-mcp-lab`)
+### 🔌 Lab (`aegis-mcp-lab`)
+
+MQTT (Tasmota/ESPHome/Shelly style) or the Home Assistant REST API.
 
 | Tool | Risk | Description |
 |---|---|---|
@@ -223,9 +312,15 @@ Resource: `nas://roots`.
 
 Resources: `lab://devices`, `lab://sensors`.
 
+### 🧠 Core (`aegis_core`)
+
+Providers: Anthropic (official SDK), OpenAI-compatible endpoints and Ollama. It routes by difficulty, latency
+and cost under a daily budget, falls back and escalates on errors, and runs an agent loop over many MCP
+servers. See [Cost-aware routing](#cost-aware-routing).
+
 ### Operator CLI (`aegis-mcp`)
 
-| Command | |
+| Command | What it does |
 |---|---|
 | `aegis-mcp pending [--state-dir]` | list pending confirmations |
 | `aegis-mcp approve <request_id>` | approve on the host; the assistant then retries with `confirm_token=<request_id>` |
@@ -236,11 +331,19 @@ Resources: `lab://devices`, `lab://sensors`.
 
 ## Safety model (summary)
 
-Every call passes through the guard in this order: allow/deny → `max_risk` → rate limit → domain validators
-(geofence, temperature caps, G-code scan, path guard, allowlists) → dry-run → confirmation → execute → audit.
-The full write-up, including what this layer does **not** protect against, is in [docs/safety-model.md](docs/safety-model.md).
+Every call passes through the guard in this order:
 
-Highlights:
+1. allow/deny
+2. `max_risk`
+3. rate limit
+4. domain validators (geofence, temperature caps, G-code scan, path guard, allowlists)
+5. dry-run
+6. confirmation
+7. execute
+8. audit
+
+The full write-up, including what this layer does **not** protect against, is in [docs/safety-model.md](docs/safety-model.md).
+Security reports: [SECURITY.md](SECURITY.md).
 
 - **Confirmation tokens are bound to arguments.** The guard hashes the tool name and canonical arguments. A code
   issued for "bed 100 C" cannot approve "bed 110 C", and a code issued for deleting `a.pdf` cannot delete `b.pdf`.
@@ -253,7 +356,7 @@ Highlights:
   so a model can always reach them.
 - **Tamper-evident audit.** Every decision goes into a SHA-256-chained JSONL log, with secrets redacted.
 
-## Cost-aware routing (summary)
+## Cost-aware routing
 
 Tiers live in `config/aegis.example.toml`, ordered from cheapest to strongest. The defaults are a local Ollama
 model, then `claude-haiku-5-5`, `claude-sonnet-5-5` and `claude-opus-5-5`. Prices are in the config and you are
@@ -266,14 +369,15 @@ expected to keep them current. The router:
 4. escalates on provider errors or low-confidence answers;
 5. records the real cost from usage in a per-day budget file.
 
-Bring your own difficulty estimator or provider with one function or class each. Details:
+You can bring your own difficulty estimator (one function) or provider (one class). Details:
 [docs/architecture.md](docs/architecture.md#router-algorithm).
 
 ## Development
 
 ```bash
 pip install -e ".[dev]"
-pytest -q            # unit + MCP protocol tests (stdio subprocesses and streamable HTTP)
+pytest -q                          # unit + MCP protocol tests (stdio subprocesses and streamable HTTP)
+python scripts/make_figures.py     # regenerate docs/assets/* from real runs
 ```
 
 CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs the suite on Ubuntu for Python 3.11–3.13 and
@@ -288,7 +392,10 @@ builds the wheel. The tests cover:
 - protocol-level tests that spawn each server and list its tools through a real MCP stdio client session, plus
   one streamable-HTTP session.
 
-## Roadmap
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+<details>
+<summary><b>Roadmap</b></summary>
 
 - MCP elicitation as a third confirmation channel, for clients that support it.
 - Printer: Bambu Lab (MQTT/LAN) and PrusaLink backends, filament/spool tracking, and first-layer snapshot
@@ -300,39 +407,31 @@ builds the wheel. The tests cover:
 - Core: streaming responses, a learned difficulty estimator trained from logged outcomes, and per-tier
   prompt-cache awareness in cost estimates.
 - Signed audit checkpoints shipped off-box.
+</details>
 
-## Hardware validation / TODO for the author
+## Hardware validation
 
-None of the following has been done. Everything passing today passes against in-repo fakes.
+None of the following has been done. Everything that passes today passes against in-repo fakes.
 
-- [ ] **OctoPrint**: run against a real instance and check the `/api/printer` 409 (disconnected) path, upload
-      of a large file, `select`+`print`, and the webcam snapshot URL for your setup.
-- [ ] **Moonraker/Klipper**: check `SET_HEATER_TEMPERATURE` heater names (`extruder`, `heater_bed`, a chamber
-      sensor name if you have one), the upload `root=gcodes`, and print start/pause/cancel.
-- [ ] **Drone, ArduPilot SITL**: run the full flow in [docs/simulators.md](docs/simulators.md) (arm, takeoff,
-      goto inside and outside the fence, RTL). Confirm that `MAV_CMD_DO_SET_MODE` and the GUIDED takeoff
-      behave as in the fake.
-- [ ] **Drone, real vehicle**: start with props off and `--dry-run`, then a tethered or very low fence. Keep
-      ArduPilot's own `FENCE_*` and failsafes enabled. Check heartbeat timing over your radio link.
-- [ ] **PX4**: mode switching through pymavlink's PX4 map and takeoff altitude semantics.
-- [ ] **AEGIS-Link**: implement the protocol on the custom FC firmware and bench-test it over the real serial
-      link (props off).
-- [ ] **NAS**: SMART on your real disks. `smartctl` usually needs root or the `disk` group, and the JSON
-      fields differ by drive and USB bridge (`-d sat`). Check `nas_disk_usage` on SMB and NFS mounts.
-- [ ] **TrueNAS / Synology**: confirm the endpoints and auth (API key scope, DSM version, 2FA accounts) on
-      your firmware versions.
-- [ ] **Lab**: map your real topics (Tasmota `cmnd/stat`, ESPHome, Shelly Gen2 RPC topics differ). Set
-      `risk_on` and `auto_off_s` for anything that heats. Check the Home Assistant token scope.
-- [ ] **Router**: replace the example prices with current ones, and tune `max_difficulty` thresholds on your
-      own traffic with `aegis-orchestrate --explain`.
-- [ ] **Claude Desktop/Code**: confirm where each client shows server stderr, so the human can find
-      confirmation codes. Consider the `aegis-mcp approve` flow instead.
+| target | what to check | status |
+|---|---|---|
+| **OctoPrint** | the `/api/printer` 409 (disconnected) path, upload of a large file, `select`+`print`, and the webcam snapshot URL for your setup | ⏳ |
+| **Moonraker/Klipper** | `SET_HEATER_TEMPERATURE` heater names (`extruder`, `heater_bed`, a chamber sensor if you have one), the upload `root=gcodes`, and print start/pause/cancel | ⏳ |
+| **Drone, ArduPilot SITL** | the full flow in [docs/simulators.md](docs/simulators.md): arm, takeoff, goto inside and outside the fence, RTL. Confirm that `MAV_CMD_DO_SET_MODE` and the GUIDED takeoff behave as in the fake | ⏳ |
+| **Drone, real vehicle** | start with props off and `--dry-run`, then a tethered or very low fence. Keep ArduPilot's own `FENCE_*` and failsafes enabled. Check heartbeat timing over your radio link | ⏳ |
+| **PX4** | mode switching through pymavlink's PX4 map, and takeoff altitude semantics | ⏳ |
+| **AEGIS-Link** | implement the protocol on the custom FC firmware and bench-test it over the real serial link (props off) | ⏳ |
+| **NAS** | SMART on your real disks. `smartctl` usually needs root or the `disk` group, and the JSON fields differ by drive and USB bridge (`-d sat`). Check `nas_disk_usage` on SMB and NFS mounts | ⏳ |
+| **TrueNAS / Synology** | the endpoints and auth (API key scope, DSM version, 2FA accounts) on your firmware versions | ⏳ |
+| **Lab** | map your real topics (Tasmota `cmnd/stat`, ESPHome and Shelly Gen2 RPC topics all differ). Set `risk_on` and `auto_off_s` for anything that heats. Check the Home Assistant token scope | ⏳ |
+| **Router** | replace the example prices with current ones, and tune the `max_difficulty` thresholds on your own traffic with `aegis-orchestrate --explain` | ⏳ |
+| **Claude Desktop/Code** | find where each client shows server stderr, so the human can find confirmation codes, or use the `aegis-mcp approve` flow instead | ⏳ |
 
 ## Plugging in the private AEGIS
 
 AEGIS itself is private and none of its code is in this repo. [docs/extracting-from-aegis.md](docs/extracting-from-aegis.md)
 explains how the private assistant consumes these packages, and how to move further pieces out of it safely.
 
-## License
+## Citation · License
 
-MIT. See [LICENSE](LICENSE).
+[CITATION.cff](CITATION.cff) has the citation metadata. Licensed MIT. See [LICENSE](LICENSE).

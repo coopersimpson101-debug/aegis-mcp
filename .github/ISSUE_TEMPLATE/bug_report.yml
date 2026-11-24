@@ -1,0 +1,45 @@
+name: Bug report
+description: A tool, server, router or orchestrator behaves incorrectly
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Safety bypasses** (a dangerous action executes without a valid human code, limits not enforced, NAS
+        escape) are security issues. Please report them privately as described in SECURITY.md, not here.
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options: [printer, drone, nas, lab, safety guard, aegis_core router, aegis_core orchestrator, CLI, docs]
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      description: Config (redact secrets), tool calls and arguments. Can you reproduce it against a simulator?
+      render: shell
+    validations:
+      required: true
+  - type: dropdown
+    id: target
+    attributes:
+      label: Running against
+      options: [in-repo simulator, ArduPilot SITL / other simulator, real hardware]
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: "e.g. Ubuntu 24.04, Python 3.12, commit abc1234, MCP client: Claude Desktop"
+    validations:
+      required: true

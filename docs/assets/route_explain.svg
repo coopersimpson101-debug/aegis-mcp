@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 322" width="1180" height="322" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13">
+<rect x="0.5" y="0.5" width="1179" height="321" rx="10" fill="#0d1117" stroke="#30363d"/>
+<path d="M0.5,40 h1179" stroke="#30363d"/>
+<circle cx="22" cy="20" r="6" fill="#ff5f56"/><circle cx="42" cy="20" r="6" fill="#ffbd2e"/><circle cx="62" cy="20" r="6" fill="#27c93f"/>
+<text x="590.0" y="25" text-anchor="middle" fill="#8b949e" font-size="12.5">cost-aware router decisions (no API calls)</text>
+<text x="22" y="68" fill="#818CF8">$ <tspan fill="#e6edf3">python examples/route_explain.py</tspan></text>
+<text x="22" y="88" xml:space="preserve"><tspan fill="#818CF8">local     llama3.1:8b         </tspan><tspan fill="#e6edf3"> score=0.13 est=$0.00000  "what's the bed temperature?"</tspan></text>
+<text x="22" y="108" xml:space="preserve"><tspan fill="#8b949e">          reasons: difficulty 0.13 -&gt; local</tspan></text>
+<text x="22" y="128" xml:space="preserve"><tspan fill="#818CF8">local     llama3.1:8b         </tspan><tspan fill="#e6edf3"> score=0.13 est=$0.00000  'turn off the soldering iron'</tspan></text>
+<text x="22" y="148" xml:space="preserve"><tspan fill="#8b949e">          reasons: difficulty 0.13 -&gt; local</tspan></text>
+<text x="22" y="168" xml:space="preserve"><tspan fill="#818CF8">fast      claude-haiku-5-5    </tspan><tspan fill="#e6edf3"> score=0.37 est=$0.00040  'Compare PETG and ABS for an enclosure part and explain how b'</tspan></text>
+<text x="22" y="188" xml:space="preserve"><tspan fill="#8b949e">          reasons: difficulty 0.37 -&gt; fast</tspan></text>
+<text x="22" y="208" xml:space="preserve"><tspan fill="#818CF8">deep      claude-opus-5-5     </tspan><tspan fill="#e6edf3"> score=0.80 est=$0.01614  'Plan a survey flight, debug why the EKF altitude drifts, ana'</tspan></text>
+<text x="22" y="228" xml:space="preserve"><tspan fill="#8b949e">          reasons: difficulty 0.80 -&gt; deep</tspan></text>
+<text x="22" y="248" xml:space="preserve"><tspan fill="#818CF8">fast      claude-haiku-5-5    </tspan><tspan fill="#e6edf3"> score=0.80 est=$0.00040  'Plan a survey flight, debug why the EKF altitude drifts, ana' {'latency_budget_s': 5}</tspan></text>
+<text x="22" y="268" xml:space="preserve"><tspan fill="#8b949e">          reasons: difficulty 0.80 -&gt; deep; latency budget 5s -&gt; fast</tspan></text>
+</svg>

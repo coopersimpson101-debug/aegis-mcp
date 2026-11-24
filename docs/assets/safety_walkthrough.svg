@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 502" width="1240" height="502" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13">
+<rect x="0.5" y="0.5" width="1239" height="501" rx="10" fill="#0d1117" stroke="#30363d"/>
+<path d="M0.5,40 h1239" stroke="#30363d"/>
+<circle cx="22" cy="20" r="6" fill="#ff5f56"/><circle cx="42" cy="20" r="6" fill="#ffbd2e"/><circle cx="62" cy="20" r="6" fill="#27c93f"/>
+<text x="620.0" y="25" text-anchor="middle" fill="#8b949e" font-size="12.5">safety layer: real MCP calls against the simulated printer and NAS</text>
+<text x="22" y="68" fill="#818CF8">$ <tspan fill="#e6edf3">python scripts/make_figures.py   # safety walkthrough</tspan></text>
+<text x="22" y="88" xml:space="preserve"><tspan fill="#8b949e">model → </tspan><tspan fill="#e6edf3">printer_set_temperature</tspan><tspan fill="#8b949e"> {"heater": "bed", "target_c": 60}</tspan></text>
+<text x="22" y="108" xml:space="preserve"><tspan fill="#8b949e">   ← </tspan><tspan fill="#3fb950">ok</tspan><tspan fill="#8b949e">  risk=medium</tspan><tspan fill="#e6edf3">   bed target: 60 C</tspan></text>
+<text x="22" y="128" xml:space="preserve"><tspan fill="#8b949e">model → </tspan><tspan fill="#e6edf3">printer_set_temperature</tspan><tspan fill="#8b949e"> {"heater": "bed", "target_c": 100}</tspan></text>
+<text x="22" y="148" xml:space="preserve"><tspan fill="#8b949e">   ← </tspan><tspan fill="#d29922">confirmation_required</tspan><tspan fill="#8b949e">  risk=high  request_id=cr_4c832fcfd209  expires_in_s=119</tspan><tspan fill="#e6edf3">   bed target still 60 C; no code in the tool result</tspan></text>
+<text x="22" y="168" xml:space="preserve"><tspan fill="#8b949e">model → </tspan><tspan fill="#e6edf3">printer_set_temperature</tspan><tspan fill="#8b949e"> {"heater": "bed", "target_c": 100, "confirm_token": "AAAAAA"}</tspan></text>
+<text x="22" y="188" xml:space="preserve"><tspan fill="#8b949e">   ← </tspan><tspan fill="#d29922">confirmation_required</tspan><tspan fill="#8b949e">  risk=high  request_id=cr_7ebfde1cb7ff  expires_in_s=119</tspan><tspan fill="#e6edf3">   (model guessed a code)</tspan></text>
+<text x="22" y="208" xml:space="preserve"><tspan fill="#8b949e">server log → human: </tspan><tspan fill="#e6edf3">confirmation code for cr_4c832fcfd209: </tspan><tspan fill="#818CF8">YKWPST</tspan></text>
+<text x="22" y="228" xml:space="preserve"><tspan fill="#8b949e">model → </tspan><tspan fill="#e6edf3">printer_set_temperature</tspan><tspan fill="#8b949e"> {"heater": "bed", "target_c": 105, "confirm_token": "YKWPST"}</tspan></text>
+<text x="22" y="248" xml:space="preserve"><tspan fill="#8b949e">   ← </tspan><tspan fill="#d29922">confirmation_required</tspan><tspan fill="#8b949e">  risk=high  request_id=cr_e776562905f0  expires_in_s=119</tspan><tspan fill="#e6edf3">   (code is bound to the exact arguments)</tspan></text>
+<text x="22" y="268" xml:space="preserve"><tspan fill="#8b949e">model → </tspan><tspan fill="#e6edf3">printer_set_temperature</tspan><tspan fill="#8b949e"> {"heater": "bed", "target_c": 100, "confirm_token": "YKWPST"}</tspan></text>
+<text x="22" y="288" xml:space="preserve"><tspan fill="#8b949e">   ← </tspan><tspan fill="#3fb950">ok</tspan><tspan fill="#8b949e">  risk=high</tspan><tspan fill="#e6edf3">   bed target: 100 C</tspan></text>
+<text x="22" y="308" xml:space="preserve"><tspan fill="#8b949e">model → </tspan><tspan fill="#e6edf3">printer_set_temperature</tspan><tspan fill="#8b949e"> {"heater": "bed", "target_c": 100, "confirm_token": "YKWPST"}</tspan></text>
+<text x="22" y="328" xml:space="preserve"><tspan fill="#8b949e">   ← </tspan><tspan fill="#d29922">confirmation_required</tspan><tspan fill="#8b949e">  risk=high  request_id=cr_041c523a8ca9  expires_in_s=119</tspan><tspan fill="#e6edf3">   (codes are single-use)</tspan></text>
+<text x="22" y="348" xml:space="preserve"><tspan fill="#8b949e">model → </tspan><tspan fill="#e6edf3">printer_set_temperature</tspan><tspan fill="#8b949e"> {"heater": "bed", "target_c": 130}</tspan></text>
+<text x="22" y="368" xml:space="preserve"><tspan fill="#8b949e">   ← </tspan><tspan fill="#f85149">blocked</tspan><tspan fill="#8b949e">  bed target 130.0 C exceeds hard limit 110.0 C</tspan></text>
+<text x="22" y="388" xml:space="preserve"><tspan fill="#8b949e">model → </tspan><tspan fill="#e6edf3">nas_read</tspan><tspan fill="#8b949e"> {"path": "docs/../secret.txt"}</tspan></text>
+<text x="22" y="408" xml:space="preserve"><tspan fill="#8b949e">   ← </tspan><tspan fill="#f85149">blocked</tspan><tspan fill="#8b949e">  '..' path components are not allowed</tspan></text>
+<text x="22" y="428" xml:space="preserve"><tspan fill="#8b949e">aegis-mcp audit </tspan><tspan fill="#e6edf3">printer.jsonl</tspan><tspan fill="#8b949e"> → </tspan><tspan fill="#3fb950">chain intact</tspan><tspan fill="#8b949e"> (35 records)</tspan></text>
+<text x="22" y="448" xml:space="preserve"><tspan fill="#8b949e">aegis-mcp audit </tspan><tspan fill="#e6edf3">nas.jsonl</tspan><tspan fill="#8b949e"> → </tspan><tspan fill="#3fb950">chain intact</tspan><tspan fill="#8b949e"> (1 record)</tspan></text>
+</svg>

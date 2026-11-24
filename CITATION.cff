@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using these metadata."
+title: "aegis-mcp: safety-first MCP servers for physical hardware"
+authors:
+  - name: "the aegis-mcp authors"
+type: software
+version: 0.1.0
+license: MIT
+repository-code: "https://github.com/coopersimpson101-debug/aegis-mcp"
+keywords:
+  - model-context-protocol
+  - mcp
+  - llm-agents
+  - robotics-safety
+  - 3d-printing
+  - mavlink
+  - home-automation

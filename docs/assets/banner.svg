@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 400" width="1280" height="400" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+<defs><pattern id="g" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M 32 0 L 0 0 0 32" fill="none" stroke="#21262d" stroke-width="1"/></pattern><radialGradient id="glow" cx="0.78" cy="0.55" r="0.5"><stop offset="0" stop-color="#818CF8" stop-opacity="0.12"/><stop offset="1" stop-color="#818CF8" stop-opacity="0"/></radialGradient></defs>
+<rect width="1280" height="400" fill="#0d1117"/>
+<rect width="1280" height="400" fill="url(#g)" opacity="0.6"/>
+<rect width="1280" height="400" fill="url(#glow)"/>
+<rect x="72" y="118" width="6" height="74" fill="#818CF8"/>
+<text x="98" y="178" font-size="76" font-weight="700" fill="#e6edf3">aegis-mcp</text>
+<text x="100" y="232" font-size="22" fill="#8b949e">Safety-first MCP servers for physical hardware</text>
+<text x="100" y="272" font-size="15" fill="#818CF8">printer · drone · NAS · lab bench · cost-aware model router</text>
+<text x="1240" y="96" font-size="12" text-anchor="end" fill="#8b949e">real guard decisions: printer_set_temperature(bed, 0→130 °C)</text>
+<rect x="760" y="300.0" width="12" height="18.0" rx="2" fill="#3b3f8f" opacity="1"/>
+<rect x="778" y="292.8" width="12" height="25.2" rx="2" fill="#5b61c9" opacity="1"/>
+<rect x="796" y="285.5" width="12" height="32.5" rx="2" fill="#5b61c9" opacity="1"/>
+<rect x="814" y="278.2" width="12" height="39.8" rx="2" fill="#5b61c9" opacity="1"/>
+<rect x="832" y="271.0" width="12" height="47.0" rx="2" fill="#5b61c9" opacity="1"/>
+<rect x="850" y="263.8" width="12" height="54.2" rx="2" fill="#5b61c9" opacity="1"/>
+<rect x="868" y="256.5" width="12" height="61.5" rx="2" fill="#5b61c9" opacity="1"/>
+<rect x="886" y="249.2" width="12" height="68.8" rx="2" fill="#5b61c9" opacity="1"/>
+<rect x="904" y="242.0" width="12" height="76.0" rx="2" fill="#5b61c9" opacity="1"/>
+<rect x="922" y="234.8" width="12" height="83.2" rx="2" fill="#5b61c9" opacity="1"/>
+<rect x="940" y="227.5" width="12" height="90.5" rx="2" fill="#5b61c9" opacity="1"/>
+<rect x="958" y="220.2" width="12" height="97.8" rx="2" fill="#5b61c9" opacity="1"/>
+<rect x="976" y="213.0" width="12" height="105.0" rx="2" fill="#5b61c9" opacity="1"/>
+<rect x="994" y="205.8" width="12" height="112.2" rx="2" fill="#5b61c9" opacity="1"/>
+<rect x="1012" y="198.5" width="12" height="119.5" rx="2" fill="#5b61c9" opacity="1"/>
+<rect x="1030" y="191.2" width="12" height="126.8" rx="2" fill="#5b61c9" opacity="1"/>
+<rect x="1048" y="184.0" width="12" height="134.0" rx="2" fill="#5b61c9" opacity="1"/>
+<rect x="1066" y="176.8" width="12" height="141.2" rx="2" fill="#5b61c9" opacity="1"/>
+<rect x="1084" y="169.5" width="12" height="148.5" rx="2" fill="#5b61c9" opacity="1"/>
+<rect x="1102" y="162.2" width="12" height="155.8" rx="2" fill="#818CF8" opacity="1"/>
+<rect x="1120" y="155.0" width="12" height="163.0" rx="2" fill="#818CF8" opacity="1"/>
+<rect x="1138" y="147.8" width="12" height="170.2" rx="2" fill="#818CF8" opacity="1"/>
+<rect x="1156" y="140.5" width="12" height="177.5" rx="2" fill="#818CF8" opacity="1"/>
+<rect x="1174" y="133.2" width="12" height="184.8" rx="2" fill="#f85149" opacity="0.55"/>
+<rect x="1192" y="126.0" width="12" height="192.0" rx="2" fill="#f85149" opacity="0.55"/>
+<rect x="1210" y="118.8" width="12" height="199.2" rx="2" fill="#f85149" opacity="0.55"/>
+<rect x="1228" y="111.5" width="12" height="206.5" rx="2" fill="#f85149" opacity="0.55"/>
+<line x1="756" y1="318.5" x2="1244" y2="318.5" stroke="#30363d"/>
+<rect x="760" y="345" width="10" height="10" rx="2" fill="#5b61c9"/><text x="776" y="354" font-size="12" fill="#8b949e">auto</text>
+<rect x="829.6" y="345" width="10" height="10" rx="2" fill="#818CF8"/><text x="845.6" y="354" font-size="12" fill="#8b949e">needs human code</text>
+<rect x="988.0" y="345" width="10" height="10" rx="2" fill="#f85149"/><text x="1004.0" y="354" font-size="12" fill="#8b949e">refused</text>
+</svg>

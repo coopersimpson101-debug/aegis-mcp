@@ -1,0 +1,25 @@
+name: Feature request
+description: A new backend, device, tool or router/orchestrator capability
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do, and with which hardware or service?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: The tools or arguments you have in mind, and their risk levels and limits.
+  - type: textarea
+    id: safety
+    attributes:
+      label: Safety considerations
+      description: What could go physically wrong, and how should the guard prevent it?
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

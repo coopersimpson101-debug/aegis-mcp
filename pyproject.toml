@@ -1,12 +1,12 @@
 [build-system]
-requires = ["hatchling>=1.24"]
+requires = ["hatchling>=1.26", "hatch-fancy-pypi-readme>=24.1"]
 build-backend = "hatchling.build"
 
 [project]
 name = "aegis-mcp"
 version = "0.1.0"
 description = "Safety-first MCP servers for physical hardware (3D printer, drone, NAS, lab) plus the AEGIS cost-aware model router and orchestrator core."
-readme = "README.md"
+dynamic = ["readme"]  # README.md with links made absolute for PyPI, see [tool.hatch.metadata.hooks.fancy-pypi-readme]
 license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.11"
@@ -14,10 +14,21 @@ authors = [{ name = "the aegis-mcp authors" }]
 keywords = ["mcp", "model-context-protocol", "octoprint", "klipper", "moonraker", "mavlink", "ardupilot", "px4", "nas", "mqtt", "home-assistant", "llm-router", "agents"]
 classifiers = [
   "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Framework :: AsyncIO",
   "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Topic :: Home Automation",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
+  "Topic :: System :: Hardware",
+  "Topic :: System :: Monitoring",
 ]
 dependencies = [
   "mcp>=2.3,<3",
@@ -25,6 +36,13 @@ dependencies = [
   "pydantic>=2.7",
   "anyio>=4.4",
 ]
+
+[project.urls]
+Homepage = "https://github.com/coopersimpson101-debug/aegis-mcp"
+Repository = "https://github.com/coopersimpson101-debug/aegis-mcp"
+Issues = "https://github.com/coopersimpson101-debug/aegis-mcp/issues"
+Documentation = "https://github.com/coopersimpson101-debug/aegis-mcp/tree/main/docs"
+"Safety model" = "https://github.com/coopersimpson101-debug/aegis-mcp/blob/main/docs/safety-model.md"
 
 [project.optional-dependencies]
 drone = ["pymavlink>=2.4.40", "pyserial>=3.5"]
@@ -40,6 +58,25 @@ aegis-mcp-drone = "aegis_mcp.drone.server:main"
 aegis-mcp-nas = "aegis_mcp.nas.server:main"
 aegis-mcp-lab = "aegis_mcp.lab.server:main"
 aegis-orchestrate = "aegis_core.cli:main"
+
+[tool.hatch.metadata.hooks.fancy-pypi-readme]
+content-type = "text/markdown"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+path = "README.md"
+
+# relative images/links resolve on GitHub but not on PyPI: point them at the repository
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
+pattern = 'src="(?!https?://)([^"]+)"'
+replacement = 'src="https://raw.githubusercontent.com/coopersimpson101-debug/aegis-mcp/main/\1"'
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
+pattern = 'href="(?!https?://|#)([^"]+)"'
+replacement = 'href="https://github.com/coopersimpson101-debug/aegis-mcp/blob/main/\1"'
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.substitutions]]
+pattern = '\]\((?!https?://|#)([^)]+)\)'
+replacement = '](https://github.com/coopersimpson101-debug/aegis-mcp/blob/main/\1)'
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/aegis_mcp", "src/aegis_core"]
