@@ -71,7 +71,8 @@ def _sim(a: argparse.Namespace) -> int:
         app = FakeOctoPrint(api_key=a.api_key) if a.device == "octoprint" else FakeMoonraker()
         srv, _ = app.serve(port=a.port or (5000 if a.device == "octoprint" else 7125))
         print(f"fake {a.device} on http://127.0.0.1:{srv.server_address[1]}"
-              + (f" (X-Api-Key: {a.api_key})" if a.device == "octoprint" else ""), flush=True)
+              + (" (requires the X-Api-Key given with --api-key)" if a.device == "octoprint" else ""),
+              flush=True)
     try:
         while True:
             time.sleep(3600)
