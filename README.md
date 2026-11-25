@@ -4,6 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/coopersimpson101-debug/aegis-mcp/actions/workflows/ci.yml"><img src="https://github.com/coopersimpson101-debug/aegis-mcp/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+[![Release](https://img.shields.io/github/v/release/coopersimpson101-debug/aegis-mcp?color=818CF8&label=release)](https://github.com/coopersimpson101-debug/aegis-mcp/releases/latest)
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-818CF8.svg" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-818CF8.svg" alt="Python 3.11 | 3.12 | 3.13">
   <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-servers-818CF8.svg" alt="Model Context Protocol"></a>
