@@ -2,9 +2,18 @@
 #   aegis-orchestrate --config config/aegis.example.toml --explain "what's the bed temperature?"
 #   aegis-orchestrate --config config/aegis.example.toml "start the benchy print and tell me the ETA"
 #
-# PRICES ARE CONFIG, NOT TRUTH. The numbers below were copied from Anthropic's published
-# list prices at the time of writing (USD per million tokens). Check the current pricing page
-# and update them; the router only knows what you tell it.
+# PRICES ARE CONFIG, NOT TRUTH. USD per million tokens (MTok), Claude API global standard
+# rates. Verified 2026-11-25 against:
+#   https://platform.claude.com/docs/en/about-claude/pricing
+#   https://www.anthropic.com/pricing (Claude Platform / API cards)
+# Re-check those pages and update these fields when Anthropic changes list prices;
+# the router only knows what you tell it.
+#
+# Current tier map (base input / output):
+#   claude-haiku-5-5   $0.10 / $0.50   (prompts ≤100K tokens; >100K is $0.50 / $2.50)
+#   claude-sonnet-5-5  $2.00 / $10.00
+#   claude-opus-5-5    $4.00 / $20.00
+# Haiku below uses the ≤100K rates — bump them if your typical prompts exceed 100K tokens.
 
 [router]
 daily_budget_usd = 5.00
