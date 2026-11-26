@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.26", "hatch-fancy-pypi-readme>=24.1"]
+requires = ["hatchling>=1.33.0", "hatch-fancy-pypi-readme>=25.1.0"]
 build-backend = "hatchling.build"
 
 [project]
@@ -32,9 +32,9 @@ classifiers = [
 ]
 dependencies = [
   "mcp>=2.3,<3",
-  "httpx>=0.27",
-  "pydantic>=2.7",
-  "anyio>=4.4",
+  "httpx>=0.28.1",
+  "pydantic>=2.14.4",
+  "anyio>=4.16.0",
 ]
 
 [project.urls]
@@ -45,11 +45,11 @@ Documentation = "https://github.com/coopersimpson101-debug/aegis-mcp/tree/main/d
 "Safety model" = "https://github.com/coopersimpson101-debug/aegis-mcp/blob/main/docs/safety-model.md"
 
 [project.optional-dependencies]
-drone = ["pymavlink>=2.4.40", "pyserial>=3.5"]
-lab = ["paho-mqtt>=2.0"]
-anthropic = ["anthropic>=2.0"]
+drone = ["pymavlink>=2.4.50", "pyserial>=3.5"]
+lab = ["paho-mqtt>=2.2.0"]
+anthropic = ["anthropic>=2.12.0"]
 all = ["aegis-mcp[drone,lab,anthropic]"]
-dev = ["aegis-mcp[all]", "pytest>=8", "pytest-asyncio>=0.24"]
+dev = ["aegis-mcp[all]", "pytest>=9.2.0", "pytest-asyncio>=1.5.0"]
 
 [project.scripts]
 aegis-mcp = "aegis_mcp.cli:main"
